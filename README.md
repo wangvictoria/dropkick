@@ -1,0 +1,2 @@
+# dropkick
+dropkick is a quality control and cell identification tool for single-cellRNA sequencing (scRNA-seq) data that works seamlessly with scanpy’s AnnData objects in Python. This tool accepts input files in compressed .h5ad or flat format (.csv or .tsv) with barcodes as rowsand genes as columns. Row and column headers should be present in flat files. Outputs will be written to a .csv table containing final dropkick scores and labels, as well as a compressed .h5ad file with original data for scanpy processing.
