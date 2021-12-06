@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% load static %}
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        {% block title %}<title>dropkick</title>{% endblock %}
+        <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+            <a class="navbar-brand js-scroll-trigger" href="#page-top">
+                <span class="d-block d-lg-none"><strong>dropkick</strong></span>
+                <span class="d-none d-lg-block"><img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="{% static 'images/lab_logo.jpg' %}" alt="Lau Lab Logo" /></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#background">Background</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#example">Example</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#feedback">Feedback</a></li>
+                </ul>
+            </div>
+        </nav>
+        <!-- Page Content-->
+        <div class="container-fluid p-0">
+            <!-- About-->
+            <section class="resume-section" id="home">
+                <div class="resume-section-content">
+                    <h1 class="mb-0">
+                        <a href="{% url 'index' %}"><span class="d-none d-lg-block"><img class="img-fluid mx-auto mb-2" src="{% static 'images/dropkick_logo.png' %}" alt="Dropkick Logo" style="height:130px;"/></span></a>
+                        <span class="text-primary"><!-- Option to add more text here --></span>
+                    </h1>
+                    <div class="subheading mb-5">
+                        Automated cell filtering for single-cell RNA sequencing data
+                        <a href="mailto:name@email.com"><!-- Option to insert email here --></a>
+                    </div>
+                    <p class="lead mb-5"><strong>dropkick</strong> is a quality control and cell identification tool for single-cellRNA sequencing (scRNA-seq) data that works seamlessly with <a href="https://anndata.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer">scanpy’s AnnData objects</a> in Python. This tool accepts input files in compressed <code>.h5ad</code> or flat format (<code>.csv</code> or <code>.tsv</code>) with barcodes as rowsand genes as columns. Row and column headers should be present in flat files. Outputs will be written to a <code>.csv</code> table containing final <strong>dropkick</strong> scores and labels, as well as a compressed <code>.h5ad</code> file with original data for <a href="https://scanpy.readthedocs.io/en/stable/" target="_blank" rel="noopener noreferrer">scanpy</a> processing.</p>
+                    
+                    {% block form %}{% endblock %}
+
+                    <div class="social-icons">
+                        <a class="social-icon" href="https://pypi.org/project/dropkick/" target="_blank" rel="noopener noreferrer"><i class="fab fa-python"></i></a>
+                        <a class="social-icon" href="https://github.com/KenLauLab/dropkick" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                        <a class="social-icon" href="https://twitter.com/KenLauLab" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
+                        <a class="social-icon" href="https://www.mc.vanderbilt.edu/vumcdept/cellbio/laulab/" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i></a>
+                    </div>
+                    {% block content %}{% endblock %}
+                    
+                </div>
+            </section>
+            <hr class="m-0" />
+            <!-- Background-->
+            <section class="resume-section" id="background">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Background</h2>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0"><a href = "https://genome.cshlp.org/content/early/2021/04/09/gr.271908.120.abstract" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">Genome Research Article</a></h3><br>
+                            <p>A major challenge for droplet-based single-cell sequencing technologies is distinguishing true cells from uninformative barcodes in datasets with disparate library sizes confounded by high technical noise (i.e. batch-specific ambient RNA). We present <strong>dropkick</strong>, a fully automated software tool for quality control and filtering of single-cell RNA sequencing (scRNA-seq) data with a focus on excluding ambient barcodes and recovering real cells bordering the quality threshold. By automatically determining dataset-specific training labels based on predictive global heuristics, <strong>dropkick</strong> learns a gene-based representation of real cells and ambient noise, calculating a cell probability score for each barcode. Using simulated and real-world scRNA-seq data, we benchmarked <strong>dropkick</strong> against conventional thresholding approaches and EmptyDrops, a popular computational method, demonstrating greater recovery of rare cell types and exclusion of empty droplets and noisy, uninformative barcodes. We show for both low and high-background datasets that <strong>dropkick</strong>'s weakly supervised model reliably learns which genes are enriched in ambient barcodes and draws a multidimensional boundary that is more robust to dataset-specific variation than existing filtering approaches. <strong>dropkick</strong> provides a fast, automated tool for reproducible cell identification from scRNA-seq data that is critical to downstream analysis and compatible with popular single-cell Python packages.</p>
+                            
+                            <p>Full documentation is available at <a href ="https://kenlaulab.github.io/dropkick/" target="_blank" rel="noopener noreferrer">KenLauLab.github.io/<strong>dropkick</strong>.</a></p>
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary"><!-- Option to insert date --></span></div>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0"><!-- Option to add one more info box --></h3>
+                            <div class="subheading mb-3"><!-- Add link here --></div>
+                            <p><!-- Add more text here --></p>
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary"><!-- Add date here --></span></div>
+                    </div>
+                </div>
+            </section>
+            <hr class="m-0" />
+            <!-- Example-->
+            <section class="resume-section" id="example">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Example</h2>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            
+                            <h3 class="mb-0">Sample Results for 4k Human T Cell Data</h3><br>
+                            <div class="subheading mb-5">QC Plot</div>
+                            <p>This human T cell dataset exhibits a high-quality, low-background scRNA-seq sample. The solid black curve in the log-rank plot on the left describes the total UMI counts per ranked barcode in the dataset. The green points show the corresponding number of genes detected in each barcode, while the blue and red points calculate the percentage of ambient and mitochondrial expression in each barcode as an indicator of quality.<br><br>
+                                The gene dropout plot on the right shows the percentage of barcodes in which each ranked gene is undetected. The bottom genes by dropout rate are flagged as "ambient" by <strong>dropkick</strong>.</p>
+                            <img class="img-fluid" src="{% static 'images/qc_plot.png' %}" alt="QC Plot", height="500", width="1000" /><br><br>
+                            <div class="subheading mb-5">Score Plot</div>
+                            <p>The <strong>dropkick</strong> score plot displays these barcodes in a scatter plot of <strong>ambient percentage</strong> (as calculated in the <strong>dropkick</strong> QC plot above) versus <strong>total genes</strong> detected for each cell. The automated thresholds on the latter heuristic are overlayed to show the initial training labels given to the <strong>dropkick</strong> model.</p>
+                            <img class="img-fluid" src="{% static 'images/score_plot.png' %}" alt="Score Plot", height="600", width="600" /><br><br>
+                            <div class="subheading mb-5">Coefficient Plot</div>
+                            <p>The <strong>dropkick</strong> coefficient plot displays final model <strong>coefficient values</strong> and <strong>cross validation (CV) scores</strong> for the tested regularization values of <strong>lambda</strong>. Top and bottom three genes by coefficient are notated for reference.</p>
+                            <img class="img-fluid" src="{% static 'images/coef_plot.png' %}" alt="Coefficient Plot", height="600", width="600" /><br><br>
+                            <div class="subheading mb-5"><strong>dropkick</strong> Outputs</div>
+                            <p><strong>dropkick</strong> returns an AnnData object with the following attributes. You may also download a table containing <strong>dropkick</strong> scores and labels for each barcode as a <code>.csv</code> file (see example below).<p>
+                            <ul class = "roman">
+                                <li><code>.obs['dropkick_score']</code></li>
+                                <ul class = "square">
+                                    <li>Probability of being a real cell</li>
+                                    <li>Values closer to 0 indicate empty droplets with high ambient RNA content</li>
+                                </ul>
+                                <li><code>.obs['dropkick_label']</code></li>
+                                <ul class = "square">
+                                    <li>Binary label generated by using cutoff of 0.5 on 'dropkick_score'</li>
+                                    <li><strong>dropkick</strong>'s best estimate of a "good" dataset</li>
+                                    <li>User is encouraged to adjust the cutoff according to whether they are more concerned with false negatives or false positives</li>
+                                </ul>
+                                <li><code>.obs[&#60;metrics&#62;]</code></li>
+                                <ul class = "square">
+                                    <li>Metrics used for thresholding (metrics parameter, default ['arcsinh_n_genes_by_counts'], are kept</li>
+                                </ul>
+                                <li><code>.var['dropkick_coef']</code></li>
+                                <ul class = "square">
+                                    <li>Logistic regression coefficient values for each highly variable gene (HVG) determined by the <strong>dropkick</strong> pipeline</li>
+                                </ul>
+                                <li><code>.uns['dropkick_thresholds']</code></li>
+                                <ul class = "square">
+                                    <li>Dictionary of global metrics thresholded by <strong>dropkick</strong> with the resulting threshold values and directions for good training cells</li>
+                                </ul>
+                                <li><code>.uns['dropkick_args']</code></li>
+                                <ul class = "square">
+                                    <li>Dictionary of all arguments used to run the pipeline</li>
+                                </ul>
+                            </ul>
+                            <!-- Download button -->
+                            <br>
+                            <a class="btn btn-primary" href="{% url 'download_sample' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Download Sample CSV</a>
+                            <br>
+                        </div>
+                    </div>    
+                            <!-- Etc
+                            <h3 class="mb-0">University of Colorado Boulder</h3>
+                            <div class="subheading mb-3">Bachelor of Science</div>
+                            <div>Computer Science - Web Development Track</div>
+                            <p>GPA: 3.23</p>
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">August 2006 - May 2010</span></div>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">James Buchanan High School</h3>
+                            <div class="subheading mb-3">Technology Magnet Program</div>
+                            <p>GPA: 3.56</p>
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">August 2002 - May 2006</span></div>
+                    </div>
+                            -->
+                    
+                </div>
+
+            </section>
+            <hr class="m-0" />
+            <!-- Skills-->
+            <section class="resume-section" id="feedback">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Feedback</h2>
+                    <div class="subheading mb-3">Send us your feedback!</div>
+                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSclC0ycjnzxkRhqgEf3GWyuAbIb_su3Y1z5nztaJPiZzN0o3A/viewform?embedded=true" width="640" height="443" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+                    <!-- Etc
+                    <ul class="list-inline dev-icons">
+                        <li class="list-inline-item"><i class="fab fa-html5"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-css3-alt"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-js-square"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-angular"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-react"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-node-js"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-sass"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-less"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-wordpress"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-gulp"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-grunt"></i></li>
+                        <li class="list-inline-item"><i class="fab fa-npm"></i></li>
+                    </ul>
+                    <div class="subheading mb-3">Workflow</div>
+                    <ul class="fa-ul mb-0">
+                        <li>
+                            <span class="fa-li"><i class="fas fa-check"></i></span>
+                            Mobile-First, Responsive Design
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-check"></i></span>
+                            Cross Browser Testing & Debugging
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-check"></i></span>
+                            Cross Functional Teams
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-check"></i></span>
+                            Agile Development & Scrum
+                        </li>
+                    </ul>
+            -->
+                </div>
+            </section>
+            <hr class="m-0" />
+            
+            <!-- Interests-->
+            <!-- Etc
+            <section class="resume-section" id="interests">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Interests</h2>
+                    <p>Apart from being a web developer, I enjoy most of my time being outdoors. In the winter, I am an avid skier and novice ice climber. During the warmer months here in Colorado, I enjoy mountain biking, free climbing, and kayaking.</p>
+                    <p class="mb-0">When forced indoors, I follow a number of sci-fi and fantasy genre movies and television shows, I am an aspiring chef, and I spend a large amount of my free time exploring the latest technology advancements in the front-end web development world.</p>
+                </div>
+            </section>
+            <hr class="m-0" />
+-->
+            <!-- Awards-->
+            <!-- Etc
+            <section class="resume-section" id="awards">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Awards & Certifications</h2>
+                    <ul class="fa-ul mb-0">
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            Google Analytics Certified Developer
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            Mobile Web Specialist - Google Certification
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            1
+                            <sup>st</sup>
+                            Place - University of Colorado Boulder - Emerging Tech Competition 2009
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            1
+                            <sup>st</sup>
+                            Place - University of Colorado Boulder - Adobe Creative Jam 2008 (UI Design Category)
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            2
+                            <sup>nd</sup>
+                            Place - University of Colorado Boulder - Emerging Tech Competition 2008
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            1
+                            <sup>st</sup>
+                            Place - James Buchanan High School - Hackathon 2006
+                        </li>
+                        <li>
+                            <span class="fa-li"><i class="fas fa-trophy text-warning"></i></span>
+                            3
+                            <sup>rd</sup>
+                            Place - James Buchanan High School - Hackathon 2005
+                        </li>
+                    </ul>
+                </div>
+            </section>
+-->
+        </div>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="{% static 'js/scripts.js' %}"></script>
+    </body>
+</html>

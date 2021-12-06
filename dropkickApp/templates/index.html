@@ -1,0 +1,173 @@
+{% extends "base_generic.html" %}
+
+{% block form %}
+<script type="text/javascript">
+
+function customCheck() {
+    if (document.getElementById('custom').checked) {
+        document.getElementById('ifCustom').style.display = 'block';
+    }
+    else document.getElementById('ifCustom').style.display = 'none';
+
+}
+    
+function dropkickCheck() {
+    if (document.getElementById('dropkick').checked) {
+        document.getElementById('ifDropkick').style.display = 'block';
+    }
+    else document.getElementById('ifDropkick').style.display = 'none';
+
+}
+    
+$(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();   
+    }); 
+
+const theButton = document.querySelector(".btn");
+
+theButton.addEventListener("click", () => {
+    theButton.classList.add("btn--loading");
+});
+
+</script>
+
+<!-- Upload file -->
+    <div class="subheading mb-5">
+        Upload your file here
+    </div>
+
+    <form method="post" enctype='multipart/form-data'>{% csrf_token %}
+        
+        
+    <!-- Name file
+    <div style = "max-width:470px;">
+    <input type = "text" style = "margin-left:20%;" placeholder = "Name" name = "name" />
+         </div>
+         <br>
+     -->
+        <!-- Upload file -->
+         <div style = "max-width:470px;">
+            <center> 
+                
+               <input type = "file" style = "margin-left:0%;" placeholder = "Upload" name = "document" /><br><br>
+                {% for message in messages %}
+                <div style="max-width:200px;">
+                <div class="alert alert-primary" style="margin-left:-20%;">
+                   {{ message }}
+                </div>
+                </div>
+                {% endfor %}
+                
+                
+                {% if form.errors %}
+                    <div class="alert alert-primary">
+                        {{ form.errors }}
+                    </div>
+                {% endif %}
+            </center>
+         </div>
+         <br>
+        <!-- Checkbox -->
+        
+        <div style = "max-width:470px;"> <!-- max width: 470px -->
+                <input type="checkbox" style = "margin-left:20%;" id="qc_plot" name="qc_plot" value="qc_plot" checked>
+                <label for="qc_plot"> QC Plot</label><br>
+                <input type="checkbox" style = "margin-left:20%;" id="dropkick" name="dropkick" value="dropkick" onclick="javascript:dropkickCheck();" checked>
+                <label for="dropkick"> Dropkick Filter</label><br>
+                <!-- Default or Custom Settings -->
+            <div id="ifDropkick" style="display:block">
+                <input type="radio" style = "margin-left:25%;" id="default" name="param" value="default" onclick="javascript:customCheck();" checked>
+                <label for="default"> Default Parameters</label><br>
+                <input type="radio" style = "margin-left:25%;" id="custom" name="param" value="custom" onclick="javascript:customCheck();">
+                <label for="custom"> Custom Parameters</label><br>
+                <!-- Custom parameters -->
+                <div id="ifCustom" style="display:none">
+                    
+                    
+                    
+                    <label for="min_genes" style = "margin-left:30%;"> Minimum Genes</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Threshold for minimum genes detected. Ignores all cells with less than 
+        min_genes (dropkick label = 0)."></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='50' id='min_genes' name='min_genes'>
+                    <br>
+                    
+                    <label for="mito_names" style = "margin-left:30%;"> Mitochondria Names</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Substring encompassing mitochondrial gene names for calculation of mito 
+        expression."></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='^mt-' id='mito_names' name='mito_names'><br>
+                    
+                    <label for="n_ambient" style = "margin-left:30%;"> Number of Ambient Genes</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Number of ambient genes to call. Top genes by cells."></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='10' id='n_ambient' name='n_ambient'>
+                    <br>
+                    
+                    <label for="n_hvgs" style = "margin-left:30%;"> Number of HVGs</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Number of HVGs to calculate using Seurat method. If None, do not calculate 
+        HVGs."></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='2000' id='n_hvgs' name='n_hvgs'>
+                    <br>
+                    
+                    <!--<label for="metrics" style = "margin-left:30%;"> Metrics</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Name of column(s) to threshold from `adata.obs`."></i>
+                    <input type='text' style = "margin-left:1%;width:220px;height:25px" placeholder='arcsinh_n_genes_by_counts' id='metrics' name='metrics'><br>-->
+                    
+                    
+                    <label for="thresh_methods" style = "margin-left:30%;"> Threshold Methods</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Automated thresholding method."></i>
+                    <select name="thresh_methods" id="thresh_methods">
+                        <option value="multiotsu">Multiotsu</option>
+                        <option value="otsu">Otsu</option>
+                        <option value="li">Li</option>
+                        <option value="mean">Mean</option>
+                    </select><br>
+                    
+                    <label for="score_thresh" style = "margin-left:30%;"> Score Threshold</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Threshold of dropkick scores to label as True cells."></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='0.5' id='score_thresh' name='score_thresh'>
+                    <br>
+                    
+                    <!--<label for="directions" style = "margin-left:30%;"> Directions</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Which direction to keep during training (dropkick label = 1) corresponding 
+        to each element in `metrics`."></i>
+                    <select name="directions" id="directions">
+                        <option value="above">Above</option>
+                        <option value="below">Below</option>
+                    </select><br>-->
+                    
+                    <label for="alphas" style = "margin-left:30%;"> Alphas</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Alpha value(s) to test using glmnet with n-fold cross validation."></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='0.1' id='alphas' name='alphas'><br>
+                    
+                    <label for="max_iter" style = "margin-left:30%;"> Maximum Iterations</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Number of iterations for glmnet optimization."></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='2000' id='max_iter' name='max_iter'><br>
+                    
+                    <!--<label for="n_jobs" style = "margin-left:30%;"> Number of Threads</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Number of threads for cross validation by glmnet."></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='2' id='n_jobs' name='n_jobs'><br>-->
+                    
+                    <label for="seed" style = "margin-left:30%;"> Seed</label>
+                    <i class="fas fa-info-circle" data-toggle="tooltip" title="Random state for cross validation by glmnet."></i>
+                    <input type='text' style = "margin-left:1%;width:60px;height:25px" placeholder='18' id='seed' name='seed'>
+                    
+                </div>
+             </div>
+        </div>
+         <!-- Upload button -->
+         <div style = "max-width:470px;">
+            <!--<center>-->
+               <!--<button style = "border:0px; color: white; background-color:#336699; margin-top:8%; 
+                  height:35px; width:80%; margin-left:19%;" type = "submit" value = "upload" >
+                  Upload
+               </button>-->
+                <br>
+                <button class = "btn btn-primary" style = "color:#fff;margin-left:15%;" type = "submit" value = "upload" onclick="this.classList.toggle('btn--loading')" name="document">
+                    <span class="btn__text"><i class="fas fa-upload"></i> Upload</span>
+               </button>
+               
+            <!--</center>-->
+         </div>
+         
+      </form>
+    <br><br>
+{% endblock %}
