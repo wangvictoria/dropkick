@@ -4,7 +4,11 @@ gunicorn==20.0.4
 psycopg2-binary==2.8.6
 whitenoise==5.2.0
 
-scanpy
-matplotlib>=3.0.3
+numpy>=1.9.2
+scipy>=0.14.1
 pandas
+scikit-learn>=0.18.0
+scikit-image
+matplotlib>=3.0.3
+scanpy
 dropkick
