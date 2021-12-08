@@ -8,8 +8,7 @@ pandas
 psycopg2-binary
 scanpy
 scikit-image
-scikit-learn>=0.18.0
-scipy>=0.14.1
+scikit-learn
+scipy
 whitenoise==5.3.0
-zipp==3.1.0
-dropkick==1.2.6
+dropkick
