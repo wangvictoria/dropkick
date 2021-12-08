@@ -5,7 +5,7 @@ gunicorn
 matplotlib
 numpy==1.9.2
 pandas
-psycopg2-binary==2.9.2
+psycopg2-binary
 scanpy
 scikit-image
 scikit-learn>=0.18.0
