@@ -7,4 +7,4 @@ numpy==1.9.2
 pandas
 psycopg2-binary
 zipp
-dropkick==1.2.6
+dropkick
