@@ -1,4 +1,5 @@
 scanpy
+numpy
 scikit-image
 scikit-learn>=0.18.0
 scipy>=0.14.1

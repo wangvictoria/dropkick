@@ -40,8 +40,6 @@ theButton.addEventListener("click", () => {
 <img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '600', width = '600'><br><br>
 
 
-<div class="subheading mb-5">{{ labels_text }}</div>
-
 
 <div class="subheading mb-5">{{ counts_text }}</div>
 <p>Current Score Threshold: {{ score_thresh }}</p>
@@ -56,6 +54,7 @@ theButton.addEventListener("click", () => {
     <span class="btn__text">Recalculate</span></button>
 </form><br>
 
+<div class="subheading mb-5">{{ labels_text }}</div>
 
 <a class="btn btn-primary" href="{% url 'download_csv' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Labels CSV</a>
 <br><br>

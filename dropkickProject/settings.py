@@ -26,9 +26,10 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'x_rydgg@8)k5f)lta*_y!zpxx$+k+z
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
+#DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
+DEBUG = False
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['10.141.26.164']
 
 
 # Application definition
@@ -133,3 +134,5 @@ MEDIA_URL = '/media/'
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")

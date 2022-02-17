@@ -21,7 +21,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('dropkickApp/', include('dropkickApp.urls')),
+    path('dropkick/', include('dropkickApp.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('', RedirectView.as_view(url = 'dropkickApp/', permanent = True)),
+    path('', RedirectView.as_view(url = 'dropkick/', permanent = True)),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+

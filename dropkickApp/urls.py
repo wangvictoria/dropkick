@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('calc_score_thresh/', views.calc_score_thresh, name='calc_score_thresh'),
+    path('rescore/', views.calc_score_thresh, name='calc_score_thresh'),
     path('download_csv/', views.download_csv, name='download_csv'),
     path('download_h5ad/', views.download_h5ad, name='download_h5ad'),
     path('download_counts/', views.download_counts, name='download_counts'),
