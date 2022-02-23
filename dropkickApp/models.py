@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -40,6 +41,11 @@ class MyFile(models.Model):
         return reverse('file-detail', args=[str(self.id)])
 
 class CustomParam(models.Model):
+    # unique datetime id
+    datetime = models.DateTimeField(unique=True, auto_now_add=True)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, default='sample')
+    
     # qc plot and/or filter
     qc_plot = models.BooleanField(verbose_name="qc_plot")
     dropkick = models.BooleanField(verbose_name="dropkick")
@@ -70,3 +76,4 @@ class CustomParam(models.Model):
     score_thresh = models.DecimalField(max_digits=9,
                               decimal_places=5, default=0.5, blank=True, null=True,
                               error_messages={'required': "Please enter a value between 0 and 1."})
+    

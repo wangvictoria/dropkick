@@ -7,6 +7,7 @@ from django.core.files.storage import FileSystemStorage
 import csv
 import os
 import zipfile
+import datetime
 from io import BytesIO
 from django.core.exceptions import ValidationError
 from django.contrib import messages
@@ -19,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 
-def qc_plot(adata):
+def qc_plot(adata, instance):
     # plot QC metrics
     adata = dk.recipe_dropkick(adata, n_hvgs=None, X_final="raw_counts")
     qc_plt = dk.qc_summary(adata)
@@ -27,13 +28,13 @@ def qc_plot(adata):
     # display chart
     buf = io.BytesIO()
     qc_plt.savefig(buf, format = 'png')
-    qc_plt.savefig('media/qc_plot.png')
+    qc_plt.savefig('media/qc_plot_' + instance.name + '_' + str(instance.id) + '.png')
     buf.seek(0)
     string = base64.b64encode(buf.read())
     uri = urllib.parse.quote(string)
     return uri
 
-def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed):
+def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alphas, max_iter, seed, instance):
     adata_model = dk.dropkick(
         adata, 
         min_genes=min_genes, 
@@ -50,7 +51,7 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alph
     coef_plt = dk.coef_plot(adata)
     buf_coef = io.BytesIO()
     coef_plt.savefig(buf_coef, format = 'png')
-    coef_plt.savefig('media/coef_plot.png')
+    coef_plt.savefig('media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png')
     buf_coef.seek(0)
     string_coef = base64.b64encode(buf_coef.read())
     uri_coef = urllib.parse.quote(string_coef)
@@ -60,7 +61,7 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alph
     score_plt = dk.score_plot(adata_score)
     buf_score = io.BytesIO()
     score_plt.savefig(buf_score, format = 'png')
-    score_plt.savefig('media/score_plot.png')
+    score_plt.savefig('media/score_plot_' + instance.name + '_' + str(instance.id) + '.png')
     buf_score.seek(0)
     string_score = base64.b64encode(buf_score.read())
     uri_score = urllib.parse.quote(string_score)
@@ -92,6 +93,11 @@ def param_assignment(instance):
     if not instance.seed:
         instance.seed = 18
         instance.save()
+        
+def remove_suffix(input_string, suffix):
+    if suffix and input_string.endswith(suffix):
+        return input_string[:-len(suffix)]
+    return input_string
 
 def index(request):
     """View function for home page of site."""
@@ -101,14 +107,15 @@ def index(request):
     if request.method == 'POST':
         if 'document' in request.FILES:
             if form.is_valid():
-                form.save()
-                instance = model.objects.last()
-            
+                instance = form.save()
+                request.session['id'] = instance.id
+                
                 uploaded_file = request.FILES['document']
                 if uploaded_file.name.endswith('.csv'):
                     fs = FileSystemStorage()
                     fs.save(uploaded_file.name, uploaded_file)
-                    os.rename('media/' + uploaded_file.name, 'media/sample.csv')
+                    instance.name = remove_suffix(uploaded_file.name, '.csv')
+                    os.rename('media/' + uploaded_file.name, 'media/' + instance.name + '_' + instance.datetime.strftime("%m-%d-%Y_%H:%M:%S") + '.csv')
                     instance.csv_bool = True
                     instance.save()
                     param_assignment(instance)
@@ -116,7 +123,8 @@ def index(request):
                 elif uploaded_file.name.endswith('.h5ad'):
                     fs = FileSystemStorage()
                     fs.save(uploaded_file.name, uploaded_file)
-                    os.rename('media/' + uploaded_file.name, 'media/sample.h5ad')
+                    instance.name = remove_suffix(uploaded_file.name, '.h5ad')
+                    os.rename('media/' + uploaded_file.name, 'media/' + instance.name + '_' + str(instance.id) + '.h5ad')
                     instance.h5ad_bool = True
                     instance.save()
                     param_assignment(instance)
@@ -124,7 +132,8 @@ def index(request):
                 elif uploaded_file.name.endswith('.tsv'):
                     fs = FileSystemStorage()
                     fs.save(uploaded_file.name, uploaded_file)
-                    os.rename('media/' + uploaded_file.name, 'media/sample.tsv')
+                    instance.name = remove_suffix(uploaded_file.name, '.tsv')
+                    os.rename('media/' + uploaded_file.name, 'media/' + instance.name + '_' + instance.datetime.strftime("%m-%d-%Y_%H:%M:%S") + '.tsv')
                     instance.tsv_bool = True
                     instance.save()
                     param_assignment(instance)
@@ -152,13 +161,14 @@ def process(request):
         }
     
     model = CustomParam
-    instance = model.objects.last()
+    cur_id = request.session['id']
+    instance = model.objects.filter(id=cur_id)[0]
     if instance.csv_bool:
-        adata = sc.read('media/sample.csv')
-    if instance.h5ad_bool:
-        adata = sc.read('media/sample.h5ad')
-    if instance.tsv_bool:
-        adata = sc.read('media/sample.tsv')
+        adata = sc.read('media/' + instance.name + '_' + instance.datetime.strftime("%m-%d-%Y_%H:%M:%S") + '.csv')
+    elif instance.h5ad_bool:
+        adata = sc.read('media/' + instance.name + '_' + str(instance.id) + '.h5ad')
+    elif instance.tsv_bool:
+        adata = sc.read('media/' + instance.name + '_' + instance.datetime.strftime("%m-%d-%Y_%H:%M:%S") + '.tsv')
     
     # label data results
     context['title'] = 'Your Results'
@@ -175,7 +185,7 @@ def process(request):
     if instance.qc_plot:
         # qc_plot checkbox was checked
         context['qc_text'] = 'QC Plot'
-        context['qc_plot'] = qc_plot(adata)
+        context['qc_plot'] = qc_plot(adata, instance)
         
     if instance.dropkick:
         # filter checkbox was checked
@@ -192,7 +202,7 @@ def process(request):
 
         df, context['score_plot'], context['coef_plot'] = labels(
             adata, instance.min_genes, instance.mito_names, instance.n_ambient, instance.n_hvgs, instance.thresh_methods, alphas,
-            instance.max_iter, instance.seed)
+            instance.max_iter, instance.seed, instance)
         
         context['score_thresh'] = instance.score_thresh
 
@@ -202,16 +212,16 @@ def process(request):
         context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
 
         # convert dataframe to csv
-        df.obs.to_csv('media/dropkick_labels.csv')
+        df.obs.to_csv('media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv')
 
         # convert to h5ad file
-        adata.write('media/dropkick_filter.h5ad', compression='gzip')
+        adata.write('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', compression='gzip')
 
         # output counts and genes matrices
         data_out = adata[df.obs['dropkick_label']==True]
         data = pd.DataFrame(data_out.X.toarray())
-        data.to_csv('media/dropkick_counts.csv', header=False, index=False)
-        pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes.csv', header=False, index=False)
+        data.to_csv('media/dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv', header=False, index=False)
+        pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', header=False, index=False)
 
     return render(request, 'process.html', context)
 
@@ -222,7 +232,8 @@ def calc_score_thresh(request):
     }
     form = ScoreForm(request.POST or None)
     model = CustomParam
-    instance = model.objects.last()
+    cur_id = request.session['id']
+    instance = model.objects.filter(id=cur_id)[0]
     context['title'] = 'Your Results'
     if request.method == 'POST':
         if form.is_valid():
@@ -248,7 +259,7 @@ def calc_score_thresh(request):
         score_thresh = instance.score_thresh
         context['score_thresh'] = score_thresh
                 
-        df = sc.read('media/dropkick_filter.h5ad')
+        df = sc.read('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad')
                 
         df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
 
@@ -257,10 +268,10 @@ def calc_score_thresh(request):
         
 
         # convert dataframe to csv
-        df.obs.to_csv('media/dropkick_labels.csv')
+        df.obs.to_csv('media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv')
 
         # convert to h5ad file
-        df.write('media/dropkick_filter.h5ad', compression='gzip')
+        df.write('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', compression='gzip')
     return render(request, 'score_thresh.html', context)
 
 def download_csv(request):
@@ -294,7 +305,7 @@ def download_genes(request):
     return response
 
 def download_sample(request):
-    file = open('media/t_4k_small_dropkick_scores.csv', 'rb') # Read the file in binary mode, this file must exist
+    file = open('dropkickApp/static/t_4k_small_dropkick_scores.csv', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
     response['Content-Disposition'] = 'attachment; filename="sample_dropkick_scores.csv"'
