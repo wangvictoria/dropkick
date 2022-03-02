@@ -21,7 +21,21 @@ theButton.addEventListener("click", () => {
 <h3 class="mb-0">{{ title }}</h3>
 <br>
 
+{% if qc_text %}
+<div class="subheading mb-5">{{ qc_text }}</div>
+<a class="btn btn-primary" href="{% url 'download_qc' %}" style="color:#ffffff;"><i class="fas fa-download"></i> QC Plot</a><br>
+<img src='data:image/png;base64, {{ qc_plot }}', alt = 'QC Plot', height = '500', width = '1000'><br><br>
+{% endif %}
+
 {% if labels_text %}
+<div class="subheading mb-5">{{ score_text }}</div>
+<a class="btn btn-primary" href="{% url 'download_score' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Score Plot</a><br>
+<img src='data:image/png;base64, {{ score_plot }}', alt = 'Score Plot', height = '600', width = '600'><br><br>
+
+
+<div class="subheading mb-5">{{ coef_text }}</div>
+<a class="btn btn-primary" href="{% url 'download_coef' %}" style="color:#ffffff;"><i class="fas fa-download"></i> Coefficient Plot</a><br>
+<img src='data:image/png;base64, {{ coef_plot }}', alt = 'Coefficient Plot', height = '600', width = '600'><br><br>
 
 
 <div class="subheading mb-5">{{ counts_text }}</div>

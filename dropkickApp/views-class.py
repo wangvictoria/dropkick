@@ -109,9 +109,6 @@ def index(request):
             if form.is_valid():
                 instance = form.save()
                 request.session['id'] = instance.id
-#                 global getID
-#                 def getID():
-#                     return instance.id
                 
                 uploaded_file = request.FILES['document']
                 if uploaded_file.name.endswith('.csv'):
@@ -156,7 +153,7 @@ def index(request):
         'form': form
     })
 
-def process(request):
+class process(generic.edit.FormMixin, generic.DetailView):
     context = {
             'title': None, 'counts_text': None, 'counts_false': None, 'counts_true': None, 
             'qc_text': None, 'score_text': None, 'coef_text': None, 'labels_text': None,
@@ -164,8 +161,16 @@ def process(request):
         }
     
     model = CustomParam
-    cur_id = request.session['id']
-    instance = model.objects.filter(id=cur_id)[0]
+    template_name = 'process.html'
+    
+    def get_context_data(self, **kwargs):
+        context = {
+            'title': None, 'counts_text': None, 'counts_false': None, 'counts_true': None, 
+            'qc_text': None, 'score_text': None, 'coef_text': None, 'labels_text': None,
+            'qc_plot': None, 'score_plot': None, 'coef_plot': None, 'labels': None,
+        }
+        
+    
     if instance.csv_bool:
         adata = sc.read('media/' + instance.name + '_' + instance.datetime.strftime("%m-%d-%Y_%H:%M:%S") + '.csv')
     elif instance.h5ad_bool:
@@ -189,7 +194,6 @@ def process(request):
         # qc_plot checkbox was checked
         context['qc_text'] = 'QC Plot'
         context['qc_plot'] = qc_plot(adata, instance)
-        request.session['qc_uri'] = context['qc_plot']
         
     if instance.dropkick:
         # filter checkbox was checked
@@ -207,8 +211,6 @@ def process(request):
         df, context['score_plot'], context['coef_plot'] = labels(
             adata, instance.min_genes, instance.mito_names, instance.n_ambient, instance.n_hvgs, instance.thresh_methods, alphas,
             instance.max_iter, instance.seed, instance)
-        request.session['score_uri'] = context['score_plot']
-        request.session['coef_uri'] = context['coef_plot']
         
         context['score_thresh'] = instance.score_thresh
 
@@ -252,7 +254,6 @@ def calc_score_thresh(request):
     if instance.qc_plot:
         # qc_plot checkbox was checked
         context['qc_text'] = 'QC Plot'
-        context['qc_plot'] = request.session['qc_uri']
         
     if instance.dropkick:
         # filter checkbox was checked
@@ -260,9 +261,7 @@ def calc_score_thresh(request):
         # run dropkick
         context['counts_text'] = 'Droplets Inventory'
         context['score_text'] = 'Score Plot'
-        context['score_plot'] = request.session['score_uri']
         context['coef_text'] = 'Coefficient Plot'
-        context['coef_plot'] = request.session['coef_uri']
         context['labels_text'] = 'Dropkick Labels'
     
         score_thresh = instance.score_thresh
