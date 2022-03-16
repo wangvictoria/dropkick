@@ -10,6 +10,7 @@
         <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}" />
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/ff17f9713b.js" crossorigin="anonymous"></script>
         <!-- Google fonts-->
         <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet" type="text/css" />
         <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet" type="text/css" />
@@ -46,15 +47,15 @@
                         Automated cell filtering for single-cell RNA sequencing data
                         <a href="mailto:name@email.com"><!-- Option to insert email here --></a>
                     </div>
-                    <p class="lead mb-5"><strong>dropkick</strong> is a quality control and cell identification tool for single-cellRNA sequencing (scRNA-seq) data that works seamlessly with <a href="https://anndata.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer">scanpy’s AnnData objects</a> in Python. This tool accepts input files in compressed <code>.h5ad</code> or flat format (<code>.csv</code> or <code>.tsv</code>) with barcodes as rowsand genes as columns. Row and column headers should be present in flat files. Outputs will be written to a <code>.csv</code> table containing final <strong>dropkick</strong> scores and labels, as well as a compressed <code>.h5ad</code> file with original data for <a href="https://scanpy.readthedocs.io/en/stable/" target="_blank" rel="noopener noreferrer">scanpy</a> processing.</p>
+                    <p class="lead mb-5"><strong>dropkick</strong> is a quality control and cell identification tool for single-cellRNA sequencing (scRNA-seq) data that works seamlessly with <a href="https://anndata.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer">scanpy’s AnnData objects</a> in Python. This tool accepts input files in compressed <code>.h5ad</code> or flat format (<code>.csv</code> or <code>.tsv</code>) with barcodes as rows and genes as columns. Row and column headers should be present in flat files. We recommend using <a href="https://scanpy.readthedocs.io/en/stable/" target="_blank" rel="noopener noreferrer">scanpy</a> to work with compressed <code>.h5ad</code> outputs, which track all metadata from the <strong>dropkick</strong> model for barcodes and genes. Outputs will also be written to <code>.csv</code> tables containing final <strong>dropkick</strong> scores and labels, as well as <strong>dropkick</strong> coefficients for all genes used in the model.</p>
                     
                     {% block form %}{% endblock %}
 
                     <div class="social-icons">
                         <a class="social-icon" href="https://pypi.org/project/dropkick/" target="_blank" rel="noopener noreferrer"><i class="fab fa-python"></i></a>
-                        <a class="social-icon" href="https://github.com/KenLauLab/dropkick" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                        <a class="social-icon" href="https://github.com/Ken-Lau-Lab/dropkick" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
                         <a class="social-icon" href="https://twitter.com/KenLauLab" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
-                        <a class="social-icon" href="https://www.mc.vanderbilt.edu/vumcdept/cellbio/laulab/" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i></a>
+                        <a class="social-icon" href="https://kenlaulab.org/" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i></a>
                     </div>
                     {% block content %}{% endblock %}
                     
@@ -67,7 +68,7 @@
                     <h2 class="mb-5">Background</h2>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
-                            <h3 class="mb-0"><a href = "https://genome.cshlp.org/content/early/2021/04/09/gr.271908.120.abstract" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">Genome Research Article</a></h3><br>
+                            <h3 class="mb-0"><a href = "https://genome.cshlp.org/content/31/10/1742" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">Genome Research Article</a></h3><br>
                             <p>A major challenge for droplet-based single-cell sequencing technologies is distinguishing true cells from uninformative barcodes in datasets with disparate library sizes confounded by high technical noise (i.e. batch-specific ambient RNA). We present <strong>dropkick</strong>, a fully automated software tool for quality control and filtering of single-cell RNA sequencing (scRNA-seq) data with a focus on excluding ambient barcodes and recovering real cells bordering the quality threshold. By automatically determining dataset-specific training labels based on predictive global heuristics, <strong>dropkick</strong> learns a gene-based representation of real cells and ambient noise, calculating a cell probability score for each barcode. Using simulated and real-world scRNA-seq data, we benchmarked <strong>dropkick</strong> against conventional thresholding approaches and EmptyDrops, a popular computational method, demonstrating greater recovery of rare cell types and exclusion of empty droplets and noisy, uninformative barcodes. We show for both low and high-background datasets that <strong>dropkick</strong>'s weakly supervised model reliably learns which genes are enriched in ambient barcodes and draws a multidimensional boundary that is more robust to dataset-specific variation than existing filtering approaches. <strong>dropkick</strong> provides a fast, automated tool for reproducible cell identification from scRNA-seq data that is critical to downstream analysis and compatible with popular single-cell Python packages.</p>
                             
                             <p>Full documentation is available at <a href ="https://kenlaulab.github.io/dropkick/" target="_blank" rel="noopener noreferrer">KenLauLab.github.io/<strong>dropkick</strong>.</a></p>

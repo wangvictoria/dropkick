@@ -66,7 +66,7 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alph
     string_score = base64.b64encode(buf_score.read())
     uri_score = urllib.parse.quote(string_score)
     
-    return adata, uri_score, uri_coef
+    return uri_score, uri_coef
 
 def param_assignment(instance):
     if not instance.min_genes:
@@ -112,37 +112,40 @@ def index(request):
 #                 global getID
 #                 def getID():
 #                     return instance.id
-                
-                uploaded_file = request.FILES['document']
-                if uploaded_file.name.endswith('.csv'):
-                    fs = FileSystemStorage()
-                    fs.save(uploaded_file.name, uploaded_file)
-                    instance.name = remove_suffix(uploaded_file.name, '.csv')
-                    os.rename('media/' + uploaded_file.name, 'media/' + instance.name + '_' + instance.datetime.strftime("%m-%d-%Y_%H:%M:%S") + '.csv')
-                    instance.csv_bool = True
-                    instance.save()
-                    param_assignment(instance)
-                    return redirect(process)
-                elif uploaded_file.name.endswith('.h5ad'):
-                    fs = FileSystemStorage()
-                    fs.save(uploaded_file.name, uploaded_file)
-                    instance.name = remove_suffix(uploaded_file.name, '.h5ad')
-                    os.rename('media/' + uploaded_file.name, 'media/' + instance.name + '_' + str(instance.id) + '.h5ad')
-                    instance.h5ad_bool = True
-                    instance.save()
-                    param_assignment(instance)
-                    return redirect(process)
-                elif uploaded_file.name.endswith('.tsv'):
-                    fs = FileSystemStorage()
-                    fs.save(uploaded_file.name, uploaded_file)
-                    instance.name = remove_suffix(uploaded_file.name, '.tsv')
-                    os.rename('media/' + uploaded_file.name, 'media/' + instance.name + '_' + instance.datetime.strftime("%m-%d-%Y_%H:%M:%S") + '.tsv')
-                    instance.tsv_bool = True
-                    instance.save()
-                    param_assignment(instance)
-                    return redirect(process)
+
+                if instance.qc_plot or instance.dropkick:
+                    uploaded_file = request.FILES['document']
+                    if uploaded_file.name.endswith('.csv'):
+                        fs = FileSystemStorage()
+                        fs.save(uploaded_file.name, uploaded_file)
+                        instance.name = remove_suffix(uploaded_file.name, '.csv')
+                        os.rename('media/' + uploaded_file.name, 'media/' + instance.name + '_' + str(instance.id) + '.csv')
+                        instance.csv_bool = True
+                        instance.save()
+                        param_assignment(instance)
+                        return redirect(process)
+                    elif uploaded_file.name.endswith('.h5ad'):
+                        fs = FileSystemStorage()
+                        fs.save(uploaded_file.name, uploaded_file)
+                        instance.name = remove_suffix(uploaded_file.name, '.h5ad')
+                        os.rename('media/' + uploaded_file.name, 'media/' + instance.name + '_' + str(instance.id) + '.h5ad')
+                        instance.h5ad_bool = True
+                        instance.save()
+                        param_assignment(instance)
+                        return redirect(process)
+                    elif uploaded_file.name.endswith('.tsv'):
+                        fs = FileSystemStorage()
+                        fs.save(uploaded_file.name, uploaded_file)
+                        instance.name = remove_suffix(uploaded_file.name, '.tsv')
+                        os.rename('media/' + uploaded_file.name, 'media/' + instance.name + '_' + str(instance.id) + '.tsv')
+                        instance.tsv_bool = True
+                        instance.save()
+                        param_assignment(instance)
+                        return redirect(process)
+                    else:
+                        messages.error(request,'Please upload a file of CSV, H5AD, or TSV type')
                 else:
-                    messages.error(request,'Please upload a file of CSV, H5AD, or TSV type')
+                    messages.error(request, 'Please select an action to run.')
                 
             else:
                 form = CustomForm(request.POST or None)
@@ -167,11 +170,11 @@ def process(request):
     cur_id = request.session['id']
     instance = model.objects.filter(id=cur_id)[0]
     if instance.csv_bool:
-        adata = sc.read('media/' + instance.name + '_' + instance.datetime.strftime("%m-%d-%Y_%H:%M:%S") + '.csv')
+        adata = sc.read('media/' + instance.name + '_' + str(instance.id) + '.csv')
     elif instance.h5ad_bool:
         adata = sc.read('media/' + instance.name + '_' + str(instance.id) + '.h5ad')
     elif instance.tsv_bool:
-        adata = sc.read('media/' + instance.name + '_' + instance.datetime.strftime("%m-%d-%Y_%H:%M:%S") + '.tsv')
+        adata = sc.read('media/' + instance.name + '_' + str(instance.id) + '.tsv')
     
     # label data results
     context['title'] = 'Your Results'
@@ -204,7 +207,7 @@ def process(request):
         alphas = [float(x) for x in alphas_list]
 
 
-        df, context['score_plot'], context['coef_plot'] = labels(
+        context['score_plot'], context['coef_plot'] = labels(
             adata, instance.min_genes, instance.mito_names, instance.n_ambient, instance.n_hvgs, instance.thresh_methods, alphas,
             instance.max_iter, instance.seed, instance)
         request.session['score_uri'] = context['score_plot']
@@ -212,22 +215,25 @@ def process(request):
         
         context['score_thresh'] = instance.score_thresh
 
-        df.obs['dropkick_label'] = df.obs['dropkick_score'] > instance.score_thresh
+        adata.obs['dropkick_label'] = adata.obs['dropkick_score'] > instance.score_thresh
 
-        context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
-        context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
+        context['counts_false'] = adata.obs['dropkick_label'].value_counts()[0]
+        context['counts_true'] = adata.obs['dropkick_label'].value_counts()[1]
 
         # convert dataframe to csv
-        df.obs.to_csv('media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv')
+        adata.obs[["dropkick_score","dropkick_label"]].to_csv('media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv')
 
         # convert to h5ad file
         adata.write('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', compression='gzip')
 
         # output counts and genes matrices
-        data_out = adata[df.obs['dropkick_label']==True]
-        data = pd.DataFrame(data_out.X.toarray())
-        data.to_csv('media/dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv', header=False, index=False)
-        pd.DataFrame(data_out.var_names).to_csv('media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', header=False, index=False)
+        # output counts csv
+        #data_out = adata[df.obs['dropkick_label']==True]
+        #data = pd.DataFrame(data_out.X.toarray())
+        #data.to_csv('media/dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv', header=False, index=False)
+        
+        # output genes csv
+        adata.var[["pct_dropout_by_counts","ambient","dropkick_coef"]].to_csv('media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', header=False, index=False)
 
     return render(request, 'process.html', context)
 
@@ -268,19 +274,19 @@ def calc_score_thresh(request):
         score_thresh = instance.score_thresh
         context['score_thresh'] = score_thresh
                 
-        df = sc.read('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad')
+        adata = sc.read('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad')
                 
-        df.obs['dropkick_label'] = df.obs['dropkick_score'] > score_thresh
+        adata.obs['dropkick_label'] = adata.obs['dropkick_score'] > score_thresh
 
-        context['counts_false'] = df.obs['dropkick_label'].value_counts()[0]
-        context['counts_true'] = df.obs['dropkick_label'].value_counts()[1]
+        context['counts_false'] = adata.obs['dropkick_label'].value_counts()[0]
+        context['counts_true'] = adata.obs['dropkick_label'].value_counts()[1]
         
 
         # convert dataframe to csv
-        df.obs.to_csv('media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv')
+        adata.obs[["dropkick_score","dropkick_label"]].to_csv('media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv')
 
         # convert to h5ad file
-        df.write('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', compression='gzip')
+        adata.write('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', compression='gzip')
     return render(request, 'score_thresh.html', context)
 
 def download_csv(request):
@@ -290,7 +296,8 @@ def download_csv(request):
     response = FileResponse(file)
 
     # decide the file name
-    response['Content-Disposition'] = 'attachment; filename="dropkick_labels.csv"'
+    new_filename = 'dropkick_labels_' + instance.name + '_' + str(instance.id);
+    response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_h5ad(request):
@@ -300,7 +307,8 @@ def download_h5ad(request):
     response = FileResponse(file)
 
     # decide the file name
-    response['Content-Disposition'] = 'attachment; filename="dropkick_filter.h5ad"'
+    new_filename = 'dropkick_filter_' + instance.name + '_' + str(instance.id);
+    response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_counts(request):
@@ -309,7 +317,8 @@ def download_counts(request):
     file = open('media/dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv', 'rb')
     response = FileResponse(file)
     
-    response['Content-Disposition'] = 'attachment; filename="dropkick_counts.csv"'
+    new_filename = 'dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv';
+    response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_genes(request):
@@ -318,7 +327,8 @@ def download_genes(request):
     file = open('media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', 'rb')
     response = FileResponse(file)
     
-    response['Content-Disposition'] = 'attachment; filename="dropkick_genes.csv"'
+    new_filename = 'dropkick_genes_' + instance.name + '_' + str(instance.id);
+    response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_sample(request):
@@ -336,7 +346,8 @@ def download_qc(request):
     file = open('media/qc_plot_' + instance.name + '_' + str(instance.id) + '.png', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    response['Content-Disposition'] = 'attachment; filename="qc_plot.png"'
+    new_filename = 'qc_plot_' + instance.name + '_' + str(instance.id);
+    response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_coef(request):
@@ -345,7 +356,8 @@ def download_coef(request):
     file = open('media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    response['Content-Disposition'] = 'attachment; filename="coef_plot.png"'
+    new_filename = 'coef_plot_' + instance.name + '_' + str(instance.id);
+    response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_score(request):
@@ -354,7 +366,8 @@ def download_score(request):
     file = open('media/score_plot_' + instance.name + '_' + str(instance.id) + '.png', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    response['Content-Disposition'] = 'attachment; filename="score_plot.png"'
+    new_filename = 'score_plot_' + instance.name + '_' + str(instance.id);
+    response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_all_no_qc(request):
@@ -362,12 +375,12 @@ def download_all_no_qc(request):
     # FIXME: Change this (get paths from DB etc)
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    filenames = ['media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', 'media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png', 'media/score_plot_' + instance.name + '_' + str(instance.id) + '.png']
+    filenames = ['media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', 'media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png', 'media/score_plot_' + instance.name + '_' + str(instance.id) + '.png']
     
     # Folder name in ZIP archive which contains the above files
     # E.g [thearchive.zip]/somefiles/file2.txt
     # FIXME: Set this to something better
-    zip_subdir = "dropkick_output"
+    zip_subdir = "dropkick_output_" + instance.name
     zip_filename = "%s.zip" % zip_subdir
     
     # Open StringIO to grab in-memory ZIP contents
@@ -400,12 +413,12 @@ def download_all(request):
     # FIXME: Change this (get paths from DB etc)
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    filenames = ['media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', 'media/qc_plot_' + instance.name + '_' + str(instance.id) + '.png', 'media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png', 'media/score_plot_' + instance.name + '_' + str(instance.id) + '.png']
+    filenames = ['media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', 'media/qc_plot_' + instance.name + '_' + str(instance.id) + '.png', 'media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png', 'media/score_plot_' + instance.name + '_' + str(instance.id) + '.png']
     
     # Folder name in ZIP archive which contains the above files
     # E.g [thearchive.zip]/somefiles/file2.txt
     # FIXME: Set this to something better
-    zip_subdir = "dropkick_output"
+    zip_subdir = "dropkick_output_" + instance.name
     zip_filename = "%s.zip" % zip_subdir
     
     # Open StringIO to grab in-memory ZIP contents
