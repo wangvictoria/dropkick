@@ -76,4 +76,11 @@ class CustomParam(models.Model):
     score_thresh = models.DecimalField(max_digits=3,
                               decimal_places=2, default=0.50, blank=True, null=True,
                               error_messages={'required': "Please enter a value between 0 and 1."})
-    
+
+class Contact(models.Model):
+    name = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(max_length=50, blank=True, null=True)
+    comments = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name

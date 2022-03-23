@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MyFile, CustomParam
+from .models import MyFile, CustomParam, Contact
 
 # Register your models here.
 
@@ -9,3 +9,4 @@ class MyFileAdmin(admin.ModelAdmin):
 
 admin.site.register(MyFile, MyFileAdmin)
 admin.site.register(CustomParam)
+admin.site.register(Contact)

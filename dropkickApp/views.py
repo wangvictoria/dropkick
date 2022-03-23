@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from dropkickApp.models import MyFile, CustomParam
+from dropkickApp.models import MyFile, CustomParam, Contact
 from django.views import generic
-from .forms import UploadFileForm, CheckboxForm, CustomForm, ScoreForm
+from .forms import UploadFileForm, CheckboxForm, CustomForm, ScoreForm, ContactForm
 from django.http import HttpResponse, StreamingHttpResponse, FileResponse
 from django.core.files.storage import FileSystemStorage
 import csv
@@ -104,7 +104,7 @@ def index(request):
     form = CustomForm(request.POST or None, initial = {'min_genes': 50, 'mito_names': 'mt'})
     model = CustomParam
     # upload file
-    if request.method == 'POST':
+    if request.method == 'POST' and 'document' in request.POST:
         if 'document' in request.FILES:
             if form.is_valid():
                 instance = form.save()
@@ -143,20 +143,30 @@ def index(request):
                         param_assignment(instance)
                         return redirect(process)
                     else:
-                        messages.error(request,'Please upload a file of CSV, H5AD, or TSV type')
+                        messages.error(request,'Please upload a file of CSV, H5AD, or TSV type', extra_tags='document')
                 else:
-                    messages.error(request, 'Please select an action to run.')
+                    messages.error(request, 'Please select an action to run.', extra_tags='document')
                 
             else:
                 form = CustomForm(request.POST or None)
         else:
-            messages.error(request,'Please select a file.')
+            messages.error(request,'Please select a file.', extra_tags='document')
 #     else:
 #         form = CheckboxForm()
-        
+    form2 = ContactForm(request.POST or None)
+    if request.method=='POST' and 'contact' in request.POST:
+        if form2.is_valid():
+            contact = form2.save()
+            if not contact.name:
+                contact.name = "Anonymous"
+                contact.save()
+            messages.success(request,'Your comments have been recorded.', extra_tags='contact')
+        else:
+            form2 = ContactForm(request.POST or None)
         
     return render(request,'index.html', context = {
-        'form': form
+        'form': form,
+        'form2': form2,
     })
 
 def process(request):

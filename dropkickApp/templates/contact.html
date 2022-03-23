@@ -1,0 +1,41 @@
+{% block contact %}
+
+<!--<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>-->
+
+<form method="post" enctype='multipart/form-data'>{% csrf_token %}
+
+    {% for message in messages %}
+    {% if "contact" in message.tags %}
+    <div class="alert alert-success">
+       {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+    
+    {% if form2.errors %}
+        <div class="alert alert-primary">
+            {{ form2.errors.as_text }}
+        </div>
+    {% endif %}
+    
+  <div class="form-group">
+      <label for="name">Name</label>
+      <input name="name" type="text" class="form-control" id="name" placeholder="Name">
+  </div><br>
+
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input name="email" type="email" class="form-control" id="email" placeholder="Email">
+  </div><br>
+
+  <div class="form-group">
+    <label for="comments">Comments</label>
+    <textarea name="comments" class="form-control" id="comments" rows="3" placeholder="Comments"></textarea>
+  </div><br>
+
+  <button type="submit" name="contact" class="btn btn-secondary">Submit</button>
+</form>
+
+{% endblock %}

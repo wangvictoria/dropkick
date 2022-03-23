@@ -7,7 +7,7 @@
         <meta name="description" content="" />
         <meta name="author" content="" />
         {% block title %}<title>dropkick</title>{% endblock %}
-        <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}" />
+        <link rel="icon" type="image/x-icon" href="{% static 'images/lab_icon.png' %}" />
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
         <script src="https://kit.fontawesome.com/ff17f9713b.js" crossorigin="anonymous"></script>
@@ -168,7 +168,11 @@
                 <div class="resume-section-content">
                     <h2 class="mb-5">Feedback</h2>
                     <div class="subheading mb-3">Send us your feedback!</div>
-                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSclC0ycjnzxkRhqgEf3GWyuAbIb_su3Y1z5nztaJPiZzN0o3A/viewform?embedded=true" width="640" height="717" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+                    
+                    {% block contact %}{% endblock %}
+                    
+                    
+                    
                     <!-- Etc
                     <ul class="list-inline dev-icons">
                         <li class="list-inline-item"><i class="fab fa-html5"></i></li>

@@ -1,5 +1,5 @@
 from django import forms
-from .models import MyFile, CustomParam
+from .models import MyFile, CustomParam, Contact
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import DecimalValidator, validate_integer
@@ -127,3 +127,12 @@ class ScoreForm(forms.ModelForm):
     class Meta:
         model = CustomParam
         fields = ['score_thresh',]
+        
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = Contact
+        fields = [
+            'name',
+            'email',
+            'comments',
+        ]
