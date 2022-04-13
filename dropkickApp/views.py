@@ -20,6 +20,11 @@ import numpy as np
 import pandas as pd
 
 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# SESSION_COOKIE_AGE = 10 # set just 10 seconds to test
+# SESSION_SAVE_EVERY_REQUEST = True
+
+
 def qc_plot(adata, instance):
     # plot QC metrics
     adata = dk.recipe_dropkick(adata, n_hvgs=None, X_final="raw_counts")
@@ -28,7 +33,7 @@ def qc_plot(adata, instance):
     # display chart
     buf = io.BytesIO()
     qc_plt.savefig(buf, format = 'png')
-    qc_plt.savefig('media/qc_plot_' + instance.name + '_' + str(instance.id) + '.png')
+    qc_plt.savefig('media/' + instance.name + '_' + str(instance.id) + '_qcplot.png')
     buf.seek(0)
     string = base64.b64encode(buf.read())
     uri = urllib.parse.quote(string)
@@ -51,7 +56,7 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alph
     coef_plt = dk.coef_plot(adata)
     buf_coef = io.BytesIO()
     coef_plt.savefig(buf_coef, format = 'png')
-    coef_plt.savefig('media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png')
+    coef_plt.savefig('media/' + instance.name + '_' + str(instance.id) + '_coefplot.png')
     buf_coef.seek(0)
     string_coef = base64.b64encode(buf_coef.read())
     uri_coef = urllib.parse.quote(string_coef)
@@ -61,7 +66,7 @@ def labels(adata, min_genes, mito_names, n_ambient, n_hvgs, thresh_methods, alph
     score_plt = dk.score_plot(adata_score)
     buf_score = io.BytesIO()
     score_plt.savefig(buf_score, format = 'png')
-    score_plt.savefig('media/score_plot_' + instance.name + '_' + str(instance.id) + '.png')
+    score_plt.savefig('media/' + instance.name + '_' + str(instance.id) + '_scoreplot.png')
     buf_score.seek(0)
     string_score = base64.b64encode(buf_score.read())
     uri_score = urllib.parse.quote(string_score)
@@ -231,10 +236,10 @@ def process(request):
         context['counts_true'] = adata.obs['dropkick_label'].value_counts()[1]
 
         # convert dataframe to csv
-        adata.obs[["dropkick_score","dropkick_label"]].to_csv('media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv')
+        adata.obs[["dropkick_score","dropkick_label"]].to_csv('media/' + instance.name + '_' + str(instance.id) + '_dropkicklabels.csv')
 
         # convert to h5ad file
-        adata.write('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', compression='gzip')
+        adata.write('media/' + instance.name + '_' + str(instance.id) + '_dropkickfilter.h5ad', compression='gzip')
 
         # output counts and genes matrices
         # output counts csv
@@ -243,7 +248,7 @@ def process(request):
         #data.to_csv('media/dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv', header=False, index=False)
         
         # output genes csv
-        adata.var[["pct_dropout_by_counts","ambient","dropkick_coef"]].to_csv('media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', header=False, index=False)
+        adata.var[["pct_dropout_by_counts","ambient","dropkick_coef"]].to_csv('media/' + instance.name + '_' + str(instance.id) + '_dropkickgenes.csv', header=False, index=False)
 
     return render(request, 'process.html', context)
 
@@ -284,7 +289,7 @@ def calc_score_thresh(request):
         score_thresh = instance.score_thresh
         context['score_thresh'] = score_thresh
                 
-        adata = sc.read('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad')
+        adata = sc.read('media/' + instance.name + '_' + str(instance.id) + '_dropkickfilter.h5ad')
                 
         adata.obs['dropkick_label'] = adata.obs['dropkick_score'] > score_thresh
 
@@ -293,51 +298,51 @@ def calc_score_thresh(request):
         
 
         # convert dataframe to csv
-        adata.obs[["dropkick_score","dropkick_label"]].to_csv('media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv')
+        adata.obs[["dropkick_score","dropkick_label"]].to_csv('media/' + instance.name + '_' + str(instance.id) + '_dropkicklabels.csv')
 
         # convert to h5ad file
-        adata.write('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', compression='gzip')
+        adata.write('media/' + instance.name + '_' + str(instance.id) + '_dropkickfilter.h5ad', compression='gzip')
     return render(request, 'score_thresh.html', context)
 
 def download_csv(request):
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    file = open('media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv', 'rb') # Read the file in binary mode, this file must exist
+    file = open('media/' + instance.name + '_' + str(instance.id) + '_dropkicklabels.csv', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
 
     # decide the file name
-    new_filename = 'dropkick_labels_' + instance.name + '_' + str(instance.id);
+    new_filename = instance.name + '_' + str(instance.id)+ '_dropkicklabels';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_h5ad(request):
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    file = open('media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', 'rb') # Read the file in binary mode, this file must exist
+    file = open('media/' + instance.name + '_' + str(instance.id) + '_dropkickfilter.h5ad', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
 
     # decide the file name
-    new_filename = 'dropkick_filter_' + instance.name + '_' + str(instance.id);
+    new_filename = instance.name + '_' + str(instance.id) + '_dropkickfilter';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_counts(request):
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    file = open('media/dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv', 'rb')
+    file = open('media/' + instance.name + '_' + str(instance.id) + '_dropkickcounts.csv', 'rb')
     response = FileResponse(file)
     
-    new_filename = 'dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv';
+    new_filename = instance.name + '_' + str(instance.id) + '_dropkickcounts';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_genes(request):
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    file = open('media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', 'rb')
+    file = open('media/' + instance.name + '_' + str(instance.id) + '_dropkickgenes.csv', 'rb')
     response = FileResponse(file)
     
-    new_filename = 'dropkick_genes_' + instance.name + '_' + str(instance.id);
+    new_filename = instance.name + '_' + str(instance.id) + '_dropkickgenes';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
@@ -353,30 +358,30 @@ def download_sample(request):
 def download_qc(request):
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    file = open('media/qc_plot_' + instance.name + '_' + str(instance.id) + '.png', 'rb') # Read the file in binary mode, this file must exist
+    file = open('media/' + instance.name + '_' + str(instance.id) + '_qcplot.png', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    new_filename = 'qc_plot_' + instance.name + '_' + str(instance.id);
+    new_filename = instance.name + '_' + str(instance.id) + '_qcplot';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_coef(request):
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    file = open('media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png', 'rb') # Read the file in binary mode, this file must exist
+    file = open('media/' + instance.name + '_' + str(instance.id) + '_coefplot.png', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    new_filename = 'coef_plot_' + instance.name + '_' + str(instance.id);
+    new_filename = instance.name + '_' + str(instance.id) + '_coefplot';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
 def download_score(request):
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    file = open('media/score_plot_' + instance.name + '_' + str(instance.id) + '.png', 'rb') # Read the file in binary mode, this file must exist
+    file = open('media/' + instance.name + '_' + str(instance.id) + '_scoreplot.png', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    new_filename = 'score_plot_' + instance.name + '_' + str(instance.id);
+    new_filename = instance.name + '_' + str(instance.id) + '_scoreplot';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
@@ -385,12 +390,12 @@ def download_all_no_qc(request):
     # FIXME: Change this (get paths from DB etc)
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    filenames = ['media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', 'media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png', 'media/score_plot_' + instance.name + '_' + str(instance.id) + '.png']
+    filenames = ['media/' + instance.name + '_' + str(instance.id) + '_dropkicklabels.csv', 'media/' + instance.name + '_' + str(instance.id) + '_dropkickgenes.csv', 'media/' + instance.name + '_' + str(instance.id) + '_dropkickfilter.h5ad', 'media/' + instance.name + '_' + str(instance.id) + '_coefplot.png', 'media/' + instance.name + '_' + str(instance.id) + '_scoreplot.png']
     
     # Folder name in ZIP archive which contains the above files
     # E.g [thearchive.zip]/somefiles/file2.txt
     # FIXME: Set this to something better
-    zip_subdir = "dropkick_output_" + instance.name
+    zip_subdir = instance.name + '_' + str(instance.id) + '_dropkick'
     zip_filename = "%s.zip" % zip_subdir
     
     # Open StringIO to grab in-memory ZIP contents
@@ -423,12 +428,12 @@ def download_all(request):
     # FIXME: Change this (get paths from DB etc)
     cur_id = request.session['id']
     instance = CustomParam.objects.filter(id=cur_id)[0]
-    filenames = ['media/dropkick_labels_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_genes_' + instance.name + '_' + str(instance.id) + '.csv', 'media/dropkick_filter_' + instance.name + '_' + str(instance.id) + '.h5ad', 'media/qc_plot_' + instance.name + '_' + str(instance.id) + '.png', 'media/coef_plot_' + instance.name + '_' + str(instance.id) + '.png', 'media/score_plot_' + instance.name + '_' + str(instance.id) + '.png']
+    filenames = ['media/' + instance.name + '_' + str(instance.id) + '_dropkicklabels.csv', 'media/' + instance.name + '_' + str(instance.id) + '_dropkickgenes.csv', 'media/' + instance.name + '_' + str(instance.id) + '_dropkickfilter.h5ad', 'media/' + instance.name + '_' + str(instance.id) + '_qcplot.png', 'media/' + instance.name + '_' + str(instance.id) + '_coefplot.png', 'media/' + instance.name + '_' + str(instance.id) + '_scoreplot.png']
     
     # Folder name in ZIP archive which contains the above files
     # E.g [thearchive.zip]/somefiles/file2.txt
     # FIXME: Set this to something better
-    zip_subdir = "dropkick_output_" + instance.name
+    zip_subdir = instance.name + '_' + str(instance.id) + '_dropkick'
     zip_filename = "%s.zip" % zip_subdir
     
     # Open StringIO to grab in-memory ZIP contents
