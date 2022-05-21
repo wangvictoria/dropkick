@@ -248,7 +248,7 @@ def process(request):
         #data.to_csv('media/dropkick_counts_' + instance.name + '_' + str(instance.id) + '.csv', header=False, index=False)
         
         # output genes csv
-        adata.var[["pct_dropout_by_counts","ambient","dropkick_coef"]].to_csv('media/' + instance.name + '_' + str(instance.id) + '_dropkickgenes.csv', header=False, index=False)
+        adata.var[["pct_dropout_by_counts","ambient","dropkick_coef"]].to_csv('media/' + instance.name + '_' + str(instance.id) + '_dropkickgenes.csv', header=True, index=True)
 
     return render(request, 'process.html', context)
 
@@ -311,7 +311,7 @@ def download_csv(request):
     response = FileResponse(file)
 
     # decide the file name
-    new_filename = instance.name + '_' + str(instance.id)+ '_dropkicklabels';
+    new_filename = instance.name + '_' + str(instance.id)+ '_dropkicklabels.csv';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
@@ -322,7 +322,7 @@ def download_h5ad(request):
     response = FileResponse(file)
 
     # decide the file name
-    new_filename = instance.name + '_' + str(instance.id) + '_dropkickfilter';
+    new_filename = instance.name + '_' + str(instance.id) + '_dropkickfilter.h5ad';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
@@ -332,7 +332,7 @@ def download_counts(request):
     file = open('media/' + instance.name + '_' + str(instance.id) + '_dropkickcounts.csv', 'rb')
     response = FileResponse(file)
     
-    new_filename = instance.name + '_' + str(instance.id) + '_dropkickcounts';
+    new_filename = instance.name + '_' + str(instance.id) + '_dropkickcounts.csv';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
@@ -342,7 +342,7 @@ def download_genes(request):
     file = open('media/' + instance.name + '_' + str(instance.id) + '_dropkickgenes.csv', 'rb')
     response = FileResponse(file)
     
-    new_filename = instance.name + '_' + str(instance.id) + '_dropkickgenes';
+    new_filename = instance.name + '_' + str(instance.id) + '_dropkickgenes.csv';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
@@ -361,7 +361,7 @@ def download_qc(request):
     file = open('media/' + instance.name + '_' + str(instance.id) + '_qcplot.png', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    new_filename = instance.name + '_' + str(instance.id) + '_qcplot';
+    new_filename = instance.name + '_' + str(instance.id) + '_qcplot.png';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
@@ -371,7 +371,7 @@ def download_coef(request):
     file = open('media/' + instance.name + '_' + str(instance.id) + '_coefplot.png', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    new_filename = instance.name + '_' + str(instance.id) + '_coefplot';
+    new_filename = instance.name + '_' + str(instance.id) + '_coefplot.png';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
@@ -381,7 +381,7 @@ def download_score(request):
     file = open('media/' + instance.name + '_' + str(instance.id) + '_scoreplot.png', 'rb') # Read the file in binary mode, this file must exist
     response = FileResponse(file)
     
-    new_filename = instance.name + '_' + str(instance.id) + '_scoreplot';
+    new_filename = instance.name + '_' + str(instance.id) + '_scoreplot.png';
     response['Content-Disposition'] = 'attachment; filename=%s' % new_filename
     return response
 
